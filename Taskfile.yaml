@@ -13,4 +13,4 @@ tasks:
     desc: Start service locally
     cmds:
       - echo "Starting service locally..."
-      - go run ./cmd/main.go
+      - go run ./cmd/api/main.go
