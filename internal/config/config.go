@@ -13,7 +13,7 @@ type Config struct {
 }
 
 type RESTConfig struct {
-	Addr  string `env:"REST_ADDR" env-default:":8080"`
+	Addr  string `env:"PORT" env-default:":8080"`
 	Rate  int    `env:"LIMITER_RATE" env-default:"200"`
 	Burst int    `env:"LIMITER_BURST" env-default:"100"`
 }
