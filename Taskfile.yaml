@@ -1,0 +1,16 @@
+version: "3"
+
+dotenv:
+  - .env.local
+
+tasks:
+  default:
+    desc: Run service locally
+    cmds:
+      - task: run
+
+  run:
+    desc: Start service locally
+    cmds:
+      - echo "Starting service locally..."
+      - go run ./cmd/main.go
