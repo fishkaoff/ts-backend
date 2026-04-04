@@ -43,6 +43,32 @@ func (s *MongoStore) GetUserByEmail(ctx context.Context, email string) (types.Us
 	return user, nil
 }
 
+func (s *MongoStore) GetUserById(ctx context.Context, id string) (types.User, error) {
+	const op = "mongostorage.GetUserByEmail"
+
+	objId, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return types.User{}, fmt.Errorf("%s:%w", op, err)
+	}
+
+	filter := bson.D{
+		{Key: "_id", Value: objId},
+	}
+
+	var user types.User
+
+	err = s.usersCollection.FindOne(ctx, filter).Decode(&user)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return types.User{}, storage.ErrUserNotFound
+		}
+
+		return types.User{}, fmt.Errorf("%s:%w", op, err)
+	}
+
+	return user, nil
+}
+
 func (s *MongoStore) DeleteUserByEmail(ctx context.Context, email string) error {
 	panic("implement me")
 }

@@ -19,7 +19,8 @@ import (
 
 type AuthService interface {
 	RegisterUser(ctx context.Context, dto types.RegisterDto) (types.User, error)
-	Login(ctx context.Context, dto types.LoginDto) (types.TokenPair, error)
+	Login(ctx context.Context, dto types.LoginDto) (types.User, types.TokenPair, error)
+	GetUserInfo(ctx context.Context, id string) (types.User, error)
 }
 
 type ProductsService interface {
@@ -79,7 +80,7 @@ func (s *HTTPServer) setupRoutes(mainRouter *chi.Mux) *chi.Mux {
 	jwt := middlewares.NewJWTMiddleware(s.jwtClient)
 
 	mainRouter.Route("/api", func(api chi.Router) {
-		api.Mount("/auth", s.AuthRoutes())
+		api.Mount("/auth", s.AuthRoutes(jwt))
 		api.Mount("/products", s.ProductsRoutes())
 		api.Mount("/admin", s.AdminRoutes())
 		api.Mount("/carts", s.CartsRoutes(jwt))

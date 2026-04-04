@@ -22,6 +22,7 @@ var ErrIncorrectPassword = errors.New("Неверный пароль")
 type AuthStore interface {
 	SaveUser(ctx context.Context, user types.User) (types.User, error)
 	GetUserByEmail(ctx context.Context, email string) (types.User, error)
+	GetUserById(ctx context.Context, id string) (types.User, error)
 	DeleteUserByEmail(ctx context.Context, email string) error
 }
 
@@ -79,7 +80,7 @@ func (s *Service) RegisterUser(ctx context.Context, dto types.RegisterDto) (type
 	return savedUser, nil
 }
 
-func (s *Service) Login(ctx context.Context, dto types.LoginDto) (types.TokenPair, error) {
+func (s *Service) Login(ctx context.Context, dto types.LoginDto) (types.User, types.TokenPair, error) {
 	const op = "authservice.Login"
 
 	logger := s.log.With("op", op)
@@ -89,27 +90,42 @@ func (s *Service) Login(ctx context.Context, dto types.LoginDto) (types.TokenPai
 	if err != nil {
 		if errors.Is(err, storage.ErrUserNotFound) {
 			logger.Info("user not found")
-			return types.TokenPair{}, ErrUserNotFound
+			return types.User{}, types.TokenPair{}, ErrUserNotFound
 		}
 
 		logger.Error(fmt.Errorf("%s:%w", op, err).Error())
-		return types.TokenPair{}, fmt.Errorf("%s:%w", op, err)
+		return types.User{}, types.TokenPair{}, fmt.Errorf("%s:%w", op, err)
 	}
 
 	err = bcrypt.CompareHashAndPassword(user.PassHash, []byte(dto.Password))
 	if err != nil {
 		logger.Info("incorrect password")
-		return types.TokenPair{}, ErrIncorrectPassword
+		return types.User{}, types.TokenPair{}, ErrIncorrectPassword
 	}
 
 	tokens, err := generateTokenPair(user, s.jwtCfg)
 	if err != nil {
 		logger.Error(fmt.Errorf("%s:%w", op, err).Error())
-		return types.TokenPair{}, fmt.Errorf("%s:%w", op, err)
+		return types.User{}, types.TokenPair{}, fmt.Errorf("%s:%w", op, err)
 	}
 
-	return tokens, nil
+	return user, tokens, nil
 
+}
+
+func (s *Service) GetUserInfo(ctx context.Context, id string) (types.User, error) {
+	const op = "authservice.GetUserInfo"
+
+	user, err := s.store.GetUserById(ctx, id)
+	if err != nil {
+		if errors.Is(err, storage.ErrUserNotFound) {
+			return types.User{}, ErrUserNotFound
+		}
+
+		return types.User{}, fmt.Errorf("%s:%w", op, err)
+	}
+
+	return user, nil
 }
 
 func (s *Service) IsUserExists(ctx context.Context, email string) (bool, error) {
