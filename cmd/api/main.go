@@ -35,7 +35,7 @@ func main() {
 	excelAdapter := excel_adapter.New()
 	productsSvc := products.New(log, mongo, excelAdapter)
 	jwtService := jwtclient.New([]byte(cfg.JWTConfig.SecretKey))
-	cartsService := carts.New(log, mongo)
+	cartsService := carts.New(log, mongo, productsSvc)
 
 	log.Info("start http server")
 	httpServer := httpserver.New(

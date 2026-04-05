@@ -10,6 +10,7 @@ import (
 
 	"github.com/fishkaoff/ts-backend/internal/domain/types"
 	"github.com/fishkaoff/ts-backend/internal/storage"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 var ErrProductNotFound = errors.New("Товар не найден")
@@ -18,6 +19,7 @@ type ProductsStore interface {
 	UpdateProducts(ctx context.Context, products []types.Product) error
 	GetProductById(ctx context.Context, id string) (types.Product, error)
 	GetProducts(ctx context.Context, filter types.ProductsFilter) ([]types.Product, error)
+	GetProductsByIds(ctx context.Context, ids []bson.ObjectID) ([]types.Product, error)
 }
 
 type ProductsAdapter interface {
@@ -72,6 +74,21 @@ func (s *ProductsService) GetProductById(ctx context.Context, id string) (types.
 	log.Info("product found")
 
 	return product, nil
+}
+
+func (s *ProductsService) GetProductsByIds(ctx context.Context, ids []bson.ObjectID) ([]types.Product, error) {
+	const op = "products.GetProductsByIds"
+	log := s.log.With("op", op)
+
+	log.Info("get products by ids", "ids", ids)
+	products, err := s.store.GetProductsByIds(ctx, ids)
+	if err != nil {
+		log.Error("%s:%w", op, err)
+		return nil, fmt.Errorf("%s:%w", op, err)
+	}
+
+	log.Info("got products by ids")
+	return products, nil
 }
 
 func (s *ProductsService) UpdatePrice(ctx context.Context, file multipart.File) error {

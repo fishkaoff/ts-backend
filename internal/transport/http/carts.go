@@ -13,7 +13,7 @@ func (s *HTTPServer) CartsRoutes(jwtMidlleware *middlewares.JWTMiddleware) chi.R
 	r := chi.NewRouter()
 
 	r.With(jwtMidlleware.Middleware).Get("/", s.GetUsersCart)
-	r.With(jwtMidlleware.Middleware).Put("/items/{productId}", s.UpdateProductQuantity)
+	r.With(jwtMidlleware.Middleware).Put("/items", s.UpdateProductQuantity)
 
 	return r
 }
@@ -27,7 +27,7 @@ func (s *HTTPServer) GetUsersCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cart, err := s.cartsService.GetUsersCart(ctx, userId)
+	cart, err := s.cartsService.GetUsersCartFull(ctx, userId)
 	if err != nil {
 		writeError(w, *transport.InternalError.AddDetails(err.Error()))
 		return
@@ -45,10 +45,9 @@ func (s *HTTPServer) UpdateProductQuantity(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	productId := chi.URLParam(r, "productId")
-
 	var dto struct {
-		Quantity int `json:"quantity"`
+		ProductId string `json:"product_id"`
+		Quantity  int    `json:"quantity"`
 	}
 
 	err = parseBody(r, &dto)
@@ -62,7 +61,7 @@ func (s *HTTPServer) UpdateProductQuantity(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	err = s.cartsService.UpdateProductQuantity(ctx, userId, productId, dto.Quantity)
+	err = s.cartsService.UpdateProductQuantity(ctx, userId, dto.ProductId, dto.Quantity)
 	if err != nil {
 		writeError(w, *transport.InternalError.AddDetails(err.Error()))
 		return

@@ -36,6 +36,10 @@ type CartsService interface {
 		productId string,
 		quantity int,
 	) error
+	GetUsersCartFull(
+		ctx context.Context,
+		userId string,
+	) (types.CartFull, error)
 }
 
 type HTTPServer struct {

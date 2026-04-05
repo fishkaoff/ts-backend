@@ -56,6 +56,35 @@ func (s *MongoStore) GetProductById(ctx context.Context, id string) (types.Produ
 	return product, nil
 }
 
+func (s *MongoStore) GetProductsByIds(
+	ctx context.Context,
+	ids []bson.ObjectID,
+) ([]types.Product, error) {
+	const op = "mongostorage.GetProductsByIds"
+
+	if len(ids) == 0 {
+		return []types.Product{}, nil
+	}
+
+	filter := bson.M{
+		"_id": bson.M{
+			"$in": ids,
+		},
+	}
+
+	cursor, err := s.productsCollection.Find(ctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	var products []types.Product
+	if err := cursor.All(ctx, &products); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return products, nil
+}
+
 func (s *MongoStore) UpdateProducts(ctx context.Context, products []types.Product) error {
 	const op = "mongostorage.UpdateProducts"
 
