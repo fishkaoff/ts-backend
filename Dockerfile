@@ -14,7 +14,7 @@ COPY . .
 
 RUN go build  -o ./ts-backend ./cmd/api/main.go
 
-FROM debian:bookworm-slim
+FROM alpine:latest
 COPY --from=builder /app/ts-backend /ts-backend
 
 RUN chmod +x /ts-backend
