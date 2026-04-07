@@ -14,3 +14,13 @@ tasks:
     cmds:
       - echo "Starting service locally..."
       - go run ./cmd/api/main.go
+
+  docker-build:
+    desc: Build docker image
+    cmds:
+      - docker build -t ts-backend:latest .
+
+  docker-start:
+    desc: Start docker container
+    cmds:
+      - docker run --env-file .env -p 8080:8080 ts-backend:latest
