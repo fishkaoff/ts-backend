@@ -13,6 +13,7 @@ import (
 	"github.com/fishkaoff/ts-backend/internal/services/auth"
 	"github.com/fishkaoff/ts-backend/internal/services/carts"
 	"github.com/fishkaoff/ts-backend/internal/services/products"
+	"github.com/fishkaoff/ts-backend/internal/storage/meilisearch"
 	mongostorage "github.com/fishkaoff/ts-backend/internal/storage/mongo"
 	httpserver "github.com/fishkaoff/ts-backend/internal/transport/http"
 )
@@ -30,11 +31,17 @@ func main() {
 		panic(err)
 	}
 
+	log.Info("init meilisearch")
+	searchEngine := meilisearch.New(cfg.MeiliConfig)
+
 	log.Info("init services")
 	authSvc := auth.New(log, cfg.JWTConfig, mongo)
+
 	excelAdapter := excel_adapter.New()
-	productsSvc := products.New(log, mongo, excelAdapter)
+	productsSvc := products.New(log, mongo, excelAdapter, searchEngine)
+
 	jwtService := jwtclient.New([]byte(cfg.JWTConfig.SecretKey))
+
 	cartsService := carts.New(log, mongo, productsSvc)
 
 	log.Info("start http server")

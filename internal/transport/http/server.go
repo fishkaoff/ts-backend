@@ -27,6 +27,7 @@ type ProductsService interface {
 	UpdatePrice(ctx context.Context, file multipart.File) error
 	GetProducts(ctx context.Context, filter types.ProductsFilter) ([]types.Product, error)
 	GetProductById(ctx context.Context, id string) (types.Product, error)
+	SearchProducts(ctx context.Context, query string, page int, limit int) ([]types.Product, error)
 }
 
 type CartsService interface {

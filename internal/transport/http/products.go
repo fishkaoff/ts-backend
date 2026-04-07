@@ -16,8 +16,40 @@ func (s *HTTPServer) ProductsRoutes() chi.Router {
 
 	r.Get("/", s.HandleGetProducts)
 	r.Get("/{id}", s.HandleGetProduct)
+	r.Get("/search", s.HandleSearchProducts)
 
 	return r
+}
+func (s *HTTPServer) HandleSearchProducts(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	query := r.URL.Query().Get("query")
+	if query == "" {
+		writeError(w, *transport.ApiBadRequest.AddDetails("Пустой поиск"))
+		return
+	}
+
+	pageStr := r.URL.Query().Get("page")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 0 {
+		writeError(w, *transport.ApiBadRequest.AddDetails("Невалидная страница"))
+		return
+	}
+
+	limitStr := r.URL.Query().Get("limit")
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		writeError(w, *transport.ApiBadRequest.AddDetails("Невалидный лимит"))
+		return
+	}
+
+	products, err := s.productsService.SearchProducts(ctx, query, page, limit)
+	if err != nil {
+		writeError(w, *transport.InternalError.AddDetails(err.Error()))
+		return
+	}
+
+	writeJSON(w, 200, products)
 }
 
 func (s *HTTPServer) HandleGetProducts(w http.ResponseWriter, r *http.Request) {

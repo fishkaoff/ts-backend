@@ -10,6 +10,7 @@ type Config struct {
 	RESTConfig  RESTConfig
 	MongoConfig MongoConfig
 	JWTConfig   JWTConfig
+	MeiliConfig MeilisearchConfig
 }
 
 type RESTConfig struct {
@@ -20,6 +21,12 @@ type RESTConfig struct {
 
 type MongoConfig struct {
 	ClusterUrl string `env:"MONGO_CLUSTER_URL,required"`
+}
+
+type MeilisearchConfig struct {
+	URL    string `env:"SEARCH_URL,required"`
+	ApiKey string `env:"SEARCH_API_KEY,required"`
+	Init   bool   `env:"SEARCH_INIT" env-default:"false"`
 }
 
 type JWTConfig struct {
