@@ -23,4 +23,4 @@ tasks:
   docker-start:
     desc: Start docker container
     cmds:
-      - docker run --env-file .env -p 8080:8080 ts-backend:latest
+      - docker run -d --env-file .env -p 8080:8080 ts-backend:latest
