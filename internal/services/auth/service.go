@@ -49,7 +49,7 @@ func (s *Service) RegisterUser(ctx context.Context, dto types.RegisterDto) (type
 	exists, err := s.IsUserExists(ctx, dto.Email)
 	if err != nil {
 		logger.Error(fmt.Errorf("%s:%w", op, err).Error())
-		return types.User{}, nil
+		return types.User{}, fmt.Errorf("%s:%w", op, err)
 	}
 
 	if exists {
